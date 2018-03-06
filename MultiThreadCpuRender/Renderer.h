@@ -27,7 +27,7 @@ public:
 
 	void NaiveDrawLine(Image* image, Line* line, Pixel* color);
 
-	void DrawPixelsAt(Image* image, Pixel* color, float x, float y, bool vertical);
+	void DrawPixelsAt(Image* image, Pixel* color, float x, float y);
 };
 
 

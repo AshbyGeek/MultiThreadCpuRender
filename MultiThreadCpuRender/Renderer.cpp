@@ -35,27 +35,52 @@ void Renderer::NaiveLineDrawer(Image* image, Line* lines, int numLines, Pixel* c
 
 void Renderer::NaiveDrawLine(Image* image, Line* line, Pixel* color)
 {
-	Point* start = &line->start;
-	Point* end = &line->end;
-	if (line->start.x > line->end.x)
+	int tmpdx = line->end.x - line->start.x;
+	int tmpdy = line->end.y - line->start.y;
+
+	if (abs((long)tmpdx) < abs((long)tmpdy))
 	{
-		start = &line->end;
-		end = &line->start;
+		Point* start = &line->start;
+		Point* end = &line->end;
+		if (line->start.y > line->end.y)
+		{
+			start = &line->end;
+			end = &line->start;
+		}
+
+		int dx = end->x - start->x;
+		int dy = end->y - start->y;
+
+		float x = (float)start->x;
+		for (unsigned int y = start->y; y < end->y; y++)
+		{
+			DrawPixelsAt(image, color, (float)start->x, y);
+			x += dx / (float)dy;
+		}
 	}
-
-	int dx = end->x - start->x;
-	int dy = end->y - start->y;
-
-	//TODO: handle vertical lines
-	float y = (float)start->y;
-	for (unsigned int x = start->x; x < end->x; x++)
+	else
 	{
-		DrawPixelsAt(image, color, (float)x, y, true);
-		y += (dy / (float)dx);
+		Point* start = &line->start;
+		Point* end = &line->end;
+		if (line->start.x > line->end.x)
+		{
+			start = &line->end;
+			end = &line->start;
+		}
+
+		int dx = end->x - start->x;
+		int dy = end->y - start->y;
+
+		float y = (float)start->y;
+		for (unsigned int x = start->x; x < end->x; x++)
+		{
+			DrawPixelsAt(image, color, (float)x, y);
+			y += dy / (float)dx;
+		}
 	}
 }
 
-void Renderer::DrawPixelsAt(Image* image, Pixel* color, float x, float y, bool vertical)
+void Renderer::DrawPixelsAt(Image* image, Pixel* color, float x, float y)
 {
 	int lastY = (int)ceil(y);
 	int firstY = (int)floor(y);
