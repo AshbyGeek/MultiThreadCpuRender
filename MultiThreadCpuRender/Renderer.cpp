@@ -35,20 +35,20 @@ void Renderer::NaiveLineDrawer(Image* image, Line* lines, int numLines, Pixel* c
 
 void Renderer::NaiveDrawLine(Image* image, Line* line, Pixel* color)
 {
-	auto start = line->start;
-	auto end = line->end;
+	Point* start = &line->start;
+	Point* end = &line->end;
 	if (line->start.x > line->end.x)
 	{
-		start = line->end;
-		end = line->start;
+		start = &line->end;
+		end = &line->start;
 	}
 
-	int dx = end.x - start.x;
-	int dy = end.y - start.y;
+	int dx = end->x - start->x;
+	int dy = end->y - start->y;
 
 	//TODO: handle vertical lines
-	float y = (float)line->start.y;
-	for (unsigned int x = start.x; x < end.x; x++)
+	float y = (float)start->y;
+	for (unsigned int x = start->x; x < end->x; x++)
 	{
 		DrawPixelsAt(image, color, (float)x, y, true);
 		y += (dy / (float)dx);
