@@ -14,3 +14,14 @@ Image::~Image()
 {
 	free(pixels);
 }
+
+void Image::FillColor(Pixel color)
+{
+	for (int i = 0; i < width; i++)
+	{
+		for (int j = 0; j < height; j++)
+		{
+			*(GetPixel(i, j)) = color;
+		}
+	}
+}

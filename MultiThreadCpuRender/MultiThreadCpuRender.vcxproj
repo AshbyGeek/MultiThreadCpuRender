@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\Image.cpp" />
     <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\LibPngWrapper.cpp" />
+    <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\PThreadsRenderer.cpp" />
     <ClCompile Include="MultiThreadCpuRender.cpp" />
     <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\Renderer.cpp" />
     <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\stdafx.cpp">

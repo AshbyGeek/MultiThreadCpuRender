@@ -2,10 +2,20 @@
 
 struct Pixel
 {
-	unsigned char r;
-	unsigned char g;
-	unsigned char b;
-	unsigned char a;
+	Pixel(char r, char g, char b, char a = 255)
+	{
+		this->r = r;
+		this->g = g;
+		this->b = b;
+		this->a = a;
+	}
+
+	Pixel() {};
+
+	unsigned char r = 255;
+	unsigned char g = 255;
+	unsigned char b = 255;
+	unsigned char a = 255;
 };
 
 struct Point
@@ -41,5 +51,7 @@ public:
 
 	Image(int width, int height);
 	~Image();
+
+	void FillColor(Pixel color);
 };
 

@@ -50,6 +50,9 @@
     <ClCompile Include="MultiThreadCpuRender.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\PThreadsRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\packages.config" />
