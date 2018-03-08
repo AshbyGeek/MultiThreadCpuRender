@@ -8,6 +8,19 @@ struct Pixel
 	unsigned char a;
 };
 
+struct Point
+{
+	unsigned int x;
+	unsigned int y;
+};
+
+struct Line
+{
+	Point start;
+	Point end;
+};
+
+
 class Image
 {
 public:

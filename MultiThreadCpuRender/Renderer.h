@@ -2,18 +2,6 @@
 
 #include "Image.h"
 
-struct Point
-{
-	unsigned int x;
-	unsigned int y;
-};
-
-struct Line
-{
-	Point start;
-	Point end;
-};
-
 class Renderer
 {
 public:
