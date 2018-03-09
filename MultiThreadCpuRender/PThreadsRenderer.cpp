@@ -8,15 +8,15 @@ PThreadsRenderer::PThreadsRenderer(int numThreads)
 	std::cout << "Spawning threads\n";
 
 	threads.resize(numThreads);
-	for (int i = 0; i < threads.size(); i++)
+	for (int i = 0; i < numThreads; i++)
 	{
 		ThreadData data;
-		data.jobs = &jobs;
 		data.jobsWaitCond = &jobsWaitCond;
 		data.jobsWaitCondMutex = &jobsMutex;
 		data.stop = &stopThreads;
 		data.stopped = false;
 		data.threadNum = i;
+		data.numThreads = numThreads;
 
 		threads[i].data = data;
 		pthread_create(&threads[i].id, NULL, ThreadPoolRun, &threads[i].data);
@@ -31,7 +31,6 @@ PThreadsRenderer::~PThreadsRenderer()
 
 	pthread_mutex_lock(&jobsMutex);
 	stopThreads = true;
-	jobs.empty();
 	pthread_mutex_unlock(&jobsMutex);
 
 	while (!AreAllStopped())
@@ -61,101 +60,74 @@ void* PThreadsRenderer::ThreadPoolRun(void* voidData)
 
 	while (!*(data->stop))
 	{
-		ThreadJob job = PThreadsRenderer::queue_get(data->jobs, data->jobsWaitCondMutex, data->jobsWaitCond, data->stop);
-		if (!*(data->stop))
+		pthread_mutex_lock(data->jobsWaitCondMutex);
+		pthread_cond_wait(data->jobsWaitCond, data->jobsWaitCondMutex);
+		pthread_mutex_unlock(data->jobsWaitCondMutex);
+
+
+		int x = data->threadNum;
+		int y = 0;
+		while (!*(data->stop) && (y * data->image->width + x) < (data->image->width * data->image->height))
 		{
-			RenderPixel(job);
+			while (x > data->image->width)
+			{
+				x -= data->image->width;
+				y += 1;
+			}
+			RenderPixel(data, x, y);
+			x += data->numThreads;
 		}
+
+		data->stopped = true;
 	}
-	data->stopped = true;
 	pthread_exit(nullptr);
 	return 0;
 }
 
-void PThreadsRenderer::queue_add(ThreadJob value)
-{
-	pthread_mutex_lock(&jobsMutex);
-	this->jobs.push(value);
-	pthread_cond_signal(&jobsWaitCond);
-	pthread_mutex_unlock(&jobsMutex);
-}
-
-
-ThreadJob PThreadsRenderer::queue_get(std::queue<ThreadJob>* jobs, pthread_mutex_t* jobsMutex, pthread_cond_t* jobsCond, bool* cancel)
-{
-	pthread_mutex_lock(jobsMutex);
-	while (jobs->empty() && !*(cancel))
-	{
-		pthread_cond_wait(jobsCond, jobsMutex);
-	}
-
-	if (jobs->empty())
-	{
-		pthread_mutex_unlock(jobsMutex);
-		return ThreadJob();
-	}
-	else
-	{
-		ThreadJob job = jobs->front();
-		jobs->pop();
-		pthread_mutex_unlock(jobsMutex);
-		return job;
-	}
-}
-
-void PThreadsRenderer::waitQueueEmpty()
-{
-	while (!jobs.empty())
-	{
-		Sleep(10);
-	}
-
-	std::cout << "Queue is empty\n";
-}
-
-
 void PThreadsRenderer::PThreadsRenderImage(Image* image, Pixel color, std::vector<Line>* lines)
 {
-	int done = 0;
-	int started = 0;
+	std::cout << "Starting image job... ";
 
-	std::cout << "Starting to queue jobs\n";
-
-	std::vector<ThreadInfo> threads(image->width * image->height);
-	for (int i = 0; i < image->width; i++)
+	this->stopThreads = false;
+	for(int i = 0; i < threads.size(); i++)
 	{
-		for (int j = 0; j < image->height; j++)
-		{
-			ThreadJob job;
-			job.color = color;
-			job.image = image;
-			job.lines = lines;
-			job.pixelX = i;
-			job.pixelY = j;
-
-			queue_add(job);
-		}
+		threads[i].data.color = color;
+		threads[i].data.image = image;
+		threads[i].data.lines = lines;
+		threads[i].data.stopped = false;
 	}
 
-	std::cout << "Done queing jobs\n";
+	pthread_mutex_lock(&jobsMutex);
+	pthread_cond_broadcast(&jobsWaitCond);
+	pthread_mutex_unlock(&jobsMutex);
 
-	waitQueueEmpty();
+	bool done = false;
+	while (!done)
+	{
+		done = true;
+		for (int i = 0; i < threads.size(); i++)
+		{
+			done &= threads[i].data.stopped;
+		}
+		Sleep(20);
+	}
+
+	std::cout << "done!\n";
 }
 
-void PThreadsRenderer::RenderPixel(ThreadJob job)
+void PThreadsRenderer::RenderPixel(ThreadData* data, int x, int y)
 {
-	Pixel colorAtPixel = *job.image->GetPixel(job.pixelX, job.pixelY);
+	Pixel colorAtPixel = *data->image->GetPixel(x, y);
 
-
- 	for (int i = 0; i < job.lines->size(); i++)
+ 	for (int i = 0; i < data->lines->size(); i++)
 	{
-		Line line = job.lines->at(i);
+		Line line = data->lines->at(i);
 
 		int dx = line.end.x - line.start.x;
 		int dy = line.end.y - line.start.y;
 					 
-		int px = job.pixelX - line.start.x;
-		int py = job.pixelY - line.start.y;
+		int px = x - line.start.x;
+		int py = y - line.start.y;
 		
 		float y1 = dy / (float)dx * (float)px;
 		float dify = abs(y1 - py);
@@ -168,11 +140,11 @@ void PThreadsRenderer::RenderPixel(ThreadJob job)
 			continue;
 		}
 
-		job.color.a = (int)round(255 * (1-dify));
-		colorAtPixel = BlendPixels(colorAtPixel, job.color);
+		data->color.a = (int)round(255 * (1-dify));
+		colorAtPixel = BlendPixels(colorAtPixel, data->color);
 	}
 
-	auto pixel = job.image->GetPixel(job.pixelX, job.pixelY);
+	auto pixel = data->image->GetPixel(x, y);
 	*(pixel) = colorAtPixel;
 }
 

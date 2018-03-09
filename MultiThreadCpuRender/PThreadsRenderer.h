@@ -11,9 +11,13 @@
 
 struct ThreadJob
 {
-	std::vector<Line>* lines;
-	Image* image;
-	Pixel color;
+	ThreadJob(int pixelX, int pixelY)
+	{
+		this->pixelX = pixelX;
+		this->pixelY = pixelY;
+	};
+	ThreadJob() {};
+
 	int pixelX;
 	int pixelY;
 };
@@ -22,10 +26,14 @@ struct ThreadData
 {
 	pthread_mutex_t* jobsWaitCondMutex;
 	pthread_cond_t* jobsWaitCond;
-	std::queue<ThreadJob>* jobs;
 	bool* stop;
 	bool stopped;
 	int threadNum;
+	int numThreads;
+	
+	std::vector<Line>* lines;
+	Image* image;
+	Pixel color;
 };
 
 class PThreadsRenderer
@@ -45,13 +53,8 @@ private:
 	static void* ThreadPoolRun(void* voidData);
 
 	std::vector<ThreadInfo> threads;
-	std::queue<ThreadJob> jobs;
 
-	void queue_add(ThreadJob value);
-	static ThreadJob queue_get(std::queue<ThreadJob>* jobs, pthread_mutex_t* jobsMutex, pthread_cond_t* jobsCond, bool* cancel);
-	void waitQueueEmpty();
-
-	static void RenderPixel(ThreadJob job);
+	static void RenderPixel(ThreadData* data, int x, int y);
 	static Pixel BlendPixels(Pixel p1, Pixel p2);
 
 public:
