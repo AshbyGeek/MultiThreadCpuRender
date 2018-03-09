@@ -33,6 +33,9 @@
     <ClInclude Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\PThreadsRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\OpenMpRender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\stdafx.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\PThreadsRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\OpenMpRender.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -109,6 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\Image.h" />
     <ClInclude Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\LibPngWrapper.h" />
+    <ClInclude Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\OpenMpRender.h" />
     <ClInclude Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\PThreadsRenderer.h" />
     <ClInclude Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\Renderer.h" />
     <ClInclude Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\stdafx.h" />
@@ -165,6 +167,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\Image.cpp" />
     <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\LibPngWrapper.cpp" />
+    <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\OpenMpRender.cpp" />
     <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\PThreadsRenderer.cpp" />
     <ClCompile Include="MultiThreadCpuRender.cpp" />
     <ClCompile Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\MultiThreadCpuRender\Renderer.cpp" />

@@ -55,7 +55,6 @@ private:
 	std::vector<ThreadInfo> threads;
 
 	static void RenderPixel(ThreadData* data, int x, int y);
-	static Pixel BlendPixels(Pixel p1, Pixel p2);
 
 public:
 	PThreadsRenderer(int numThreads);

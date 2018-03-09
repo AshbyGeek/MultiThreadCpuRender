@@ -1,22 +1,16 @@
 #pragma once
+#include <vector>
 
 #include "Image.h"
+#include "OpenMpRender.h"
 
-class Renderer
+namespace Renderer
 {
-public:
-	Renderer();
-	Renderer(Pixel color);
-	~Renderer();
+	void NaiveLineDrawer(Image* image, Pixel color, std::vector<Line>* lines);
 
-	Pixel color;
+	void NaiveDrawLine(Image* image, Line line, Pixel color);
 
-	void NaiveLineDrawer(Image* image, Line* lines, int numLines, Pixel* color);
+	void DrawPixelsAt(Image* image, Line line, Pixel color, int x, int y);
 
-	void NaiveDrawLine(Image* image, Line* line, Pixel* color);
-
-	void DrawPixelsAt(Image* image, Pixel* color, float x, float y);
-};
-
-
-
+	void DrawPixelsAt(Image* image, Pixel color, float x, float y);
+}

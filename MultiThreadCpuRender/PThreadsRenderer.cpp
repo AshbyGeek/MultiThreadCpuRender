@@ -74,7 +74,7 @@ void* PThreadsRenderer::ThreadPoolRun(void* voidData)
 				x -= data->image->width;
 				y += 1;
 			}
-			RenderPixel(data, x, y);
+			Image::RenderPixel(data->image, data->color, data->lines, x, y);
 			x += data->numThreads;
 		}
 
@@ -113,47 +113,4 @@ void PThreadsRenderer::PThreadsRenderImage(Image* image, Pixel color, std::vecto
 	}
 
 	std::cout << "done!\n";
-}
-
-void PThreadsRenderer::RenderPixel(ThreadData* data, int x, int y)
-{
-	Pixel colorAtPixel = *data->image->GetPixel(x, y);
-
- 	for (int i = 0; i < data->lines->size(); i++)
-	{
-		Line line = data->lines->at(i);
-
-		int dx = line.end.x - line.start.x;
-		int dy = line.end.y - line.start.y;
-					 
-		int px = x - line.start.x;
-		int py = y - line.start.y;
-		
-		float y1 = dy / (float)dx * (float)px;
-		float dify = abs(y1 - py);
-		if (dify != dify) //NaN - weird way to check
-		{
-			dify = 0;
-		}
-		if (dify >= 1 || abs(px) < 0 || abs(px) > abs(dx))
-		{
-			continue;
-		}
-
-		data->color.a = (int)round(255 * (1-dify));
-		colorAtPixel = BlendPixels(colorAtPixel, data->color);
-	}
-
-	auto pixel = data->image->GetPixel(x, y);
-	*(pixel) = colorAtPixel;
-}
-
-Pixel PThreadsRenderer::BlendPixels(Pixel p1, Pixel p2)
-{
-	Pixel newPixel;
-	newPixel.r = (p2.r * p2.a + p1.r * (255 - p2.a)) / 255;
-	newPixel.g = (p2.g * p2.a + p1.g * (255 - p2.a)) / 255;
-	newPixel.b = (p2.b * p2.a + p1.b * (255 - p2.a)) / 255;
-	newPixel.a = p1.a + p2.a*(255 - p1.a)/255;
-	return newPixel;
 }

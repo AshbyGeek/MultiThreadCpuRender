@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 struct Pixel
 {
 	Pixel(char r, char g, char b, char a = 255)
@@ -53,5 +55,19 @@ public:
 	~Image();
 
 	void FillColor(Pixel color);
+
+	static Pixel BlendPixels(Pixel p1, Pixel p2);
+
+	static void RenderPixel(Image* image, Pixel color, std::vector<Line>* lines, int x, int y);
+
+	/// <summary>
+	/// Returns the opacity value to use at the given pixel
+	/// </summary>
+	/// <param name="image"></param>
+	/// <param name="line"></param>
+	/// <param name="x"></param>
+	/// <param name="y"></param>
+	/// <returns></returns>
+	static int RenderPixel(Image* image, Line line, int x, int y);
 };
 
