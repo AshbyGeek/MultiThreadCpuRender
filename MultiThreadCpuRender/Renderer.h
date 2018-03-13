@@ -10,7 +10,5 @@ namespace Renderer
 
 	void NaiveDrawLine(Image* image, Line line, Pixel color);
 
-	void DrawPixelsAt(Image* image, Line line, Pixel color, int x, int y);
-
-	void DrawPixelsAt(Image* image, Pixel color, float x, float y);
+	void DrawPixelsAt(Image* image, Line line, Pixel color, int x, int y, float distFromPoint);
 }

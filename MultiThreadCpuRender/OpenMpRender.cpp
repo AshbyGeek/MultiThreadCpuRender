@@ -53,15 +53,13 @@ void OpenMpRender::DrawLineXCentric(Image* image, Line line, Pixel color)
 
 	int dx = end.x - start.x;
 	int dy = end.y - start.y;
-
-	float x = (float)start.x;
-
+	
 	#pragma omp parallel for
 	for (int y = start.y; y < end.y; y++)
 	{
+		float x = start.x + dx / (float)dy * (y - start.y);
 		DrawPixelsAt(image, line, color, ceil(x), y);
 		DrawPixelsAt(image, line, color, floor(x), y);
-		x = start.x + dx / (float)dy * (y - start.y);
 	}
 }
 

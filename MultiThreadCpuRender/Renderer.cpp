@@ -3,42 +3,43 @@
 
 void Renderer::NaiveLineDrawer(Image* image, Pixel color, std::vector<Line>* lines)
 {
-	for (int i = 0; i < lines->size(); i++)
-	{
-		Line line = lines->at(i);
-		NaiveDrawLine(image, line, color);
-	}
+    for (int i = 0; i < lines->size(); i++)
+    {
+        Line line = lines->at(i);
+        NaiveDrawLine(image, line, color);
+    }
 }
 
 void Renderer::NaiveDrawLine(Image* image, Line line, Pixel color)
 {
-	int tmpdx = line.end.x - line.start.x;
-	int tmpdy = line.end.y - line.start.y;
+    int tmpdx = line.end.x - line.start.x;
+    int tmpdy = line.end.y - line.start.y;
 
-	if (abs((long)tmpdx) < abs((long)tmpdy))
-	{
-		Point start = line.start;
-		Point end = line.end;
-		if (line.start.y > line.end.y)
-		{
-			start = line.end;
-			end = line.start;
-		}
+    if (abs((long)tmpdx) < abs((long)tmpdy))
+    {
+        Point start = line.start;
+        Point end = line.end;
+        if (line.start.y > line.end.y)
+        {
+            start = line.end;
+            end = line.start;
+        }
 
-		int dx = end.x - start.x;
-		int dy = end.y - start.y;
+        int dx = end.x - start.x;
+        int dy = end.y - start.y;
 
-		float x = (float)start.x;
-		for (unsigned int y = start.y; y < end.y; y++)
-		{
-			//DrawPixelsAt(image, color, x, y);
-			DrawPixelsAt(image, line, color, ceil(x), y);
-			DrawPixelsAt(image, line, color, floor(x), y);
-			x += dx / (float)dy;
-		}
-	}
-	else
-	{
+        float x = (float)start.x;
+        for (unsigned int y = start.y; y < end.y; y++)
+        {
+            //DrawPixelsAt(image, color, x, y);
+            DrawPixelsAt(image, line, color, ceil(x), y, x - ceil(x));
+            DrawPixelsAt(image, line, color, floor(x), y, x - floor(x));
+            x += dx / (float)dy;
+        }
+    }
+    else
+    {
+		// Determine which end of the line is leftmost
 		Point start = line.start;
 		Point end = line.end;
 		if (line.start.x > line.end.x)
@@ -47,49 +48,27 @@ void Renderer::NaiveDrawLine(Image* image, Line line, Pixel color)
 			end = line.start;
 		}
 
+		// Get the numerator and the denominator of the slope
 		int dx = end.x - start.x;
 		int dy = end.y - start.y;
 
-		float y = (float)start.y;
 		for (unsigned int x = start.x; x < end.x; x++)
 		{
-			//DrawPixelsAt(image, color, x, y);
-			DrawPixelsAt(image, line, color, x, ceil(y));
-			DrawPixelsAt(image, line, color, x, floor(y));
-			y += dy / (float)dx;
+			float y = start.y + dy / (float)dx * (x - start.x);
+			DrawPixelsAt(image, line, color, x, ceil(y), y - ceil(y));
+			DrawPixelsAt(image, line, color, x, floor(y), y - floor(y));
 		}
-	}
+    }
 }
 
-void Renderer::DrawPixelsAt(Image* image, Line line, Pixel color, int x, int y)
+void Renderer::DrawPixelsAt(Image* image, Line line, Pixel color, int x, int y, float distFromPoint)
 {
-	int opacity = Image::RenderPixel(image, line, x, y);
-	if (opacity > 0)
-	{
-		color.a = opacity;
-	}
-	auto originalColor = image->GetPixel(x, y);
-	*originalColor = Image::BlendPixels(*originalColor, color);
-}
-
-void Renderer::DrawPixelsAt(Image* image, Pixel color, float x, float y)
-{
-	int lastY = (int)ceil(y);
-	int firstY = (int)floor(y);
-	float percent = y - firstY;
-
-	int intX = (int)floor(x);
-
-	if (percent < 1.0)
-	{
-		auto lowerPixel = image->GetPixel(intX, firstY);
-		color.a = (int)((1.0f - percent) * 255.0f);
-		*lowerPixel = Image::BlendPixels(*lowerPixel, color);
-	}
-	else if (percent > 0)
-	{
-		auto upperPixel = image->GetPixel(intX, lastY);
-		color.a = (int)(percent * 255.0f);
-		*upperPixel = Image::BlendPixels(*upperPixel, color);
-	}
+    // Calculate opacity from relative distance
+	color.a = abs(distFromPoint) * 255;
+    if (color.a > 0)
+    {
+		//set the pixel value
+        auto originalColor = image->GetPixel(x, y);
+        *originalColor = Image::BlendPixels(*originalColor, color);
+    }
 }
