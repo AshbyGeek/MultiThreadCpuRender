@@ -7,6 +7,6 @@ namespace OpenMpRender
 	void RenderImage2(Image * image, Pixel color, std::vector<Line>* lines);
 	void DrawLineXCentric(Image * image, Line line, Pixel color);
 	void DrawLineYCentric(Image * image, Line line, Pixel color);
-	void DrawPixelsAt(Image * image, Line line, Pixel color, int x, int y);
+	void DrawPixelsAt(Image * image, Line line, Pixel color, int x, int y, float distToPixel);
 };
 
