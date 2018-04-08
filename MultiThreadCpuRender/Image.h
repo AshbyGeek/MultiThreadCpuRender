@@ -4,7 +4,7 @@
 
 struct Pixel
 {
-	Pixel(char r, char g, char b, char a = 255)
+	Pixel(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255)
 	{
 		this->r = r;
 		this->g = g;
