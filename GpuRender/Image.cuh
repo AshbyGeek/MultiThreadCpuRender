@@ -148,6 +148,29 @@ struct Line
     {
         return Point::Length(Vector());
     }
+    
+    __device__
+    __host__
+    float DistSquaredTo(Point p)
+    {
+        Point a = start;
+        Point b = end;
+
+        // Lots of vector math
+        Point n = b - a;
+        Point pa = a - p;
+
+        float c = Point::DotProduct(n, pa);
+        if (c > 0.0f)
+            return Point::LengthSquared(pa);
+
+        Point bp = p - b;
+        if (Point::DotProduct(n, bp) > 0.0f)
+            return Point::LengthSquared(bp);
+
+        Point e = pa - n * (c / Point::LengthSquared(n));
+        return Point::LengthSquared(e);
+    }
 };
 
 

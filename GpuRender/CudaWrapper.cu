@@ -12,6 +12,7 @@ void* CudaWrapper::CudaMalloc(size_t size)
     auto status = cudaMalloc((void**)&mem, size);
     if (status != cudaSuccess)
     {
+        auto str = cudaGetErrorString(status);
         throw std::exception("cudaMalloc failed!");
     }
     else

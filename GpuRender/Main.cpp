@@ -16,7 +16,6 @@ void main()
     const int HEIGHT = 1080 * 2;
     const int PADDING = 2;
 
-    const int numThreads = 8;
     const int numRuns = 34;
     
     std::vector<Image*> images(numRuns);
@@ -91,5 +90,5 @@ void main()
         free(images[i]);
     }
 
-    std::cin.get();
+    //std::cin.get();
 }

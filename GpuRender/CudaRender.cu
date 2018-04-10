@@ -21,26 +21,22 @@ Pixel BlendPixels(Pixel p1, Pixel p2)
 }
 
 __device__
-Pixel RenderPixel(Point pt, Pixel color, Line* lineArray, int numLines)
+Pixel RenderPixel(Point pt, Pixel originalColor, Pixel color, Line* lineArray, int numLines)
 {
-    Pixel colorAtPixel = Pixel();
+    Pixel colorAtPixel = originalColor;
 
     for (int i = 0; i < numLines; i++)
     {
         Line line = lineArray[i];
-
-        Point vectPtStart = pt - line.start;
-        Point vectEndStart = line.end - line.start;
-        float t = Point::DotProduct(vectPtStart, vectEndStart) / Point::DotProduct(vectEndStart, vectEndStart);
-        float distSquared = Point::LengthSquared(vectPtStart - vectEndStart * t);
-
+        float distSquared = line.DistSquaredTo(pt);
+        
         if (abs(distSquared) <= 1)
         {
             color.a = (int)round(255 * abs(distSquared));
             colorAtPixel = BlendPixels(colorAtPixel, color);
         }
     }
-
+    
     return colorAtPixel;
 }
 
@@ -48,8 +44,8 @@ __global__
 void RenderKernel(Pixel* pixels, int imgWidth, int imgHeight, Pixel color, Line* lineArray, int numLines)
 {
     int pixelNum = threadIdx.x + blockIdx.x * blockDim.x;
-    int x = pixelNum / imgWidth;
-    int y = pixelNum % imgWidth;
+    int y = pixelNum / imgWidth;
+    int x = pixelNum % imgWidth;
 
     if (x > imgWidth || y > imgHeight)
         return;
@@ -58,7 +54,8 @@ void RenderKernel(Pixel* pixels, int imgWidth, int imgHeight, Pixel color, Line*
     pt.x = x;
     pt.y = y;
 
-    auto tmpColor = RenderPixel(pt, color, lineArray, numLines);
+    auto pixel = pixels[pixelNum];
+    auto tmpColor = RenderPixel(pt, pixel, color, lineArray, numLines);
     pixels[pixelNum] = tmpColor;
 }
 
@@ -104,4 +101,5 @@ void CudaRenderImage(Image* image, Pixel color, std::vector<Line>* lines)
     {
         cudaFree(cudaLines);
     }
+    cudaDeviceReset();
 }
