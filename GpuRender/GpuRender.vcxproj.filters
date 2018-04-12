@@ -8,6 +8,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\GpuRender\NSight Analysis.nvact" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CudaWrapper.cu" />

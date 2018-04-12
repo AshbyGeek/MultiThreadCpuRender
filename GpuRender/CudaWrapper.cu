@@ -12,8 +12,10 @@ void* CudaWrapper::CudaMalloc(size_t size)
     auto status = cudaMalloc((void**)&mem, size);
     if (status != cudaSuccess)
     {
-        auto str = cudaGetErrorString(status);
-        throw std::exception("cudaMalloc failed!");
+        std::string str = "cudaMalloc returned an error: ";
+        str += cudaGetErrorString(status);
+        str += "\n";
+        throw new std::exception(str.c_str());
     }
     else
     {
@@ -26,7 +28,10 @@ void CudaWrapper::CudaMemset(void* memAddress, int value, size_t numBytes)
     auto status = cudaMemset(memAddress, value, numBytes);
     if (status != cudaSuccess)
     {
-        throw std::exception("cudaMemset failed!");
+        std::string str = "cudaMemset returned an error: ";
+        str += cudaGetErrorString(status);
+        str += "\n";
+        throw new std::exception(str.c_str());
     }
 }
 
@@ -35,7 +40,10 @@ void CudaWrapper::CudaSetDevice(int deviceNum)
     auto status = cudaSetDevice(deviceNum);
     if (status != cudaSuccess)
     {
-        throw std::exception("cudaSetDevice failed!");
+        std::string str = "cudaSetDevice returned an error: ";
+        str += cudaGetErrorString(status);
+        str += "\n";
+        throw new std::exception(str.c_str());
     }
 }
 
@@ -44,7 +52,10 @@ void CudaWrapper::CudaMemcpy(void *dst, const void *src, size_t count, enum cuda
     auto status = cudaMemcpy(dst, src, count, kind);
     if (status != cudaSuccess)
     {
-        throw std::exception("cudaMemcpy failed!");
+        std::string str = "cudaMemcpy returned an error: ";
+        str += cudaGetErrorString(status);
+        str += "\n";
+        throw new std::exception(str.c_str());
     }
 }
 
@@ -66,6 +77,9 @@ void CudaWrapper::CudaDeviceSynchronize()
     auto cudaStatus = cudaDeviceSynchronize();
     if (cudaStatus != cudaSuccess)
     {
-        throw std::exception("cudaDeviceSynchronize returned an error code after launching addKernel!\n");
+        std::string str = "cudaDeviceSynchronize returned an error: ";
+        str += cudaGetErrorString(cudaStatus);
+        str += "\n";
+        throw new std::exception(str.c_str());
     }
 }

@@ -100,6 +100,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="Image.cuh" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\..\..\Danny%27s Programming\Mercer University\SSE 692 - Parallel\MultiThreadCpuRender\GpuRender\NSight Analysis.nvact" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

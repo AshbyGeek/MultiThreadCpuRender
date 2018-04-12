@@ -7,22 +7,18 @@ struct Pixel
 {
     __device__
     __host__
-    Pixel(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255)
+    void Init(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255)
     {
-        this->r = r;
-        this->g = g;
-        this->b = b;
-        this->a = a;
+        this->R = r;
+        this->G = g;
+        this->B = b;
+        this->A = a;
     }
-
-    __device__
-    __host__
-    Pixel() {};
-
-    unsigned char r = 255;
-    unsigned char g = 255;
-    unsigned char b = 255;
-    unsigned char a = 255;
+    
+    unsigned char R = 255;
+    unsigned char G = 255;
+    unsigned char B = 255;
+    unsigned char A = 255;
 };
 
 struct Point

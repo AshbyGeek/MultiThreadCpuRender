@@ -16,13 +16,15 @@ void main()
     const int HEIGHT = 1080 * 2;
     const int PADDING = 2;
 
-    const int numRuns = 34;
+    const int numRuns = 4;
     
     std::vector<Image*> images(numRuns);
     for (int i = 0; i < numRuns; i++)
     {
         images[i] = new Image(WIDTH, HEIGHT);
-        images[i]->FillColor(Pixel(100, 100, 100));
+        Pixel fill;
+        fill.Init(100, 100, 100);
+        images[i]->FillColor(fill);
     }
 
     std::vector<Line> lines;
@@ -57,9 +59,9 @@ void main()
     lines.push_back(line);
 
     Pixel color;
-    color.r = 0;
-    color.g = 0;
-    color.b = 0;
+    color.R = 0;
+    color.G = 0;
+    color.B = 0;
     
     auto t1 = high_resolution_clock::now();
 
@@ -90,5 +92,5 @@ void main()
         free(images[i]);
     }
 
-    //std::cin.get();
+    std::cin.get();
 }
