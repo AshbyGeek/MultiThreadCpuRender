@@ -22,17 +22,17 @@ struct OpacityResult
     }
 
     bool isvalid = false;
-    unsigned char value = 0;
+    uint8_t value = 0;
 };
 
 __device__
 Pixel BlendPixels(Pixel p1, Pixel p2)
 {
     Pixel newPixel;
-    newPixel.r = (p1.r * (255 - p2.a) + p2.r * p2.a) / 255;
-    newPixel.g = (p1.g * (255 - p2.a) + p2.g * p2.a) / 255;
-    newPixel.b = (p1.b * (255 - p2.a) + p2.b * p2.a) / 255;
-    newPixel.a = p1.a + p2.a*(255 - p1.a);
+    newPixel.R = (p1.R * (255 - p2.A) + p2.R * p2.A) / 255;
+    newPixel.G = (p1.G * (255 - p2.A) + p2.G * p2.A) / 255;
+    newPixel.B = (p1.B * (255 - p2.A) + p2.B * p2.A) / 255;
+    newPixel.A = p1.A + p2.A*(255 - p1.A);
     return newPixel;
 }
 
@@ -59,7 +59,7 @@ Pixel atomicAlphaMax(Pixel* address, Pixel value)
     {
         assumed = old;
         Pixel* tmp = (Pixel*)&assumed;
-        if (value.a > tmp->a)
+        if (value.A > tmp->A)
         {
             old = atomicCAS(addrAsUint, assumed, *(unsigned int*)&value);
         }
@@ -71,38 +71,13 @@ Pixel atomicAlphaMax(Pixel* address, Pixel value)
     return *((Pixel*)&old);
 }
 
-__device__
-Pixel RenderPixel(Point pt, Pixel originalColor, Pixel color, Line* lineArray, int numLines)
-{
-    OpacityResult maxValue;
-    for (int i = 0; i < numLines; i++)
-    {
-        Line line = lineArray[i];
-        auto results = PixelOpacity(pt, line);
-
-        if (results.isvalid && results.value >= maxValue.value)
-        {
-            maxValue = results;
-        }
-    }
-    
-    if (maxValue.isvalid)
-    {
-        color.a = maxValue.value;
-        return BlendPixels(originalColor, color);
-    }
-    else
-    {
-        return originalColor;
-    }
-}
 
 __global__
 void RenderKernel(Pixel* pixels, int imgWidth, int imgHeight, Pixel color, Line* lineArray, int numLines)
 {
-    int workerNum = threadIdx.x + blockIdx.x * blockDim.x;
-    int lineNum = workerNum % numLines;
-    int pixelNum = workerNum / numLines;
+    extern __shared__ uint8_t opacities[];
+    int lineNum = threadIdx.y;
+    int pixelNum = threadIdx.x + blockIdx.x * blockDim.x;;
     int x = pixelNum % imgWidth;
     int y = pixelNum / imgWidth;
     
@@ -112,41 +87,50 @@ void RenderKernel(Pixel* pixels, int imgWidth, int imgHeight, Pixel color, Line*
     Point pt;
     pt.x = x;
     pt.y = y;
+    //printf("Point: %d,%d,%d\n", x, y, lineNum);
 
     Line line = lineArray[lineNum];
     auto results = PixelOpacity(pt, line);
 
+    int opacity = 0;
     if (results.isvalid)
     {
-        color.a = results.value;
-        auto address = &pixels[pixelNum];
-        atomicAlphaMax(address, color);
+        opacity = results.value;
     }
-}
+    opacities[threadIdx.x * numLines + lineNum] = opacity;
 
-__global__
-void FlattenImages(Pixel* base, Pixel* overlay, int imgWidth, int imgHeight)
-{
-    int pixelNum = threadIdx.x + blockIdx.x * blockDim.x;
-    int x = pixelNum % imgWidth;
-    int y = pixelNum / imgWidth;
+    __syncthreads();
 
-    if (x > imgWidth || y > imgHeight)
-        return;
-
-    base[pixelNum] = BlendPixels(base[pixelNum], overlay[pixelNum]);
+    if (lineNum == 0)
+    {
+        color.A = 0;
+        for (int i = 0; i < numLines; i++)
+        {
+            uint8_t tmpAlpha = opacities[threadIdx.x * numLines + i];
+            if (tmpAlpha > color.A)
+            {
+                color.A = tmpAlpha;
+            }
+        }
+        pixels[pixelNum] = BlendPixels(pixels[pixelNum], color);
+    }
 }
 
 void CudaRenderImage(Image* image, Pixel color, std::vector<Line>* lines)
 {
     Pixel* cudaImg = nullptr;
     Line* cudaLines = nullptr;
-    Pixel* cudaOpacities = nullptr;
     try
     {
+        CudaSetDevice(0);
+
         // allocate memory
         int numPixels = image->width * image->height;
         int numWorkers = numPixels * lines->size();
+
+        int pixelsPerBlock = THREADS_PER_BLOCK / lines->size();
+        int numBlocks = numPixels / pixelsPerBlock;
+        int pixelWorkersPerBlock = pixelsPerBlock * lines->size();
         
         cudaImg = (Pixel*)CudaMalloc(numPixels * sizeof(Pixel));
         CudaMemcpy(cudaImg, image->pixels, numPixels * sizeof(Pixel), cudaMemcpyHostToDevice);
@@ -154,26 +138,14 @@ void CudaRenderImage(Image* image, Pixel color, std::vector<Line>* lines)
         cudaLines = (Line*)CudaMalloc(lines->size() * sizeof(Line));
         CudaMemcpy(cudaLines, lines->data(), lines->size() * sizeof(Line), cudaMemcpyHostToDevice);
 
-        cudaOpacities = (Pixel*)CudaMalloc(numPixels * sizeof(Pixel));
-        CudaMemset(cudaOpacities, 0, numPixels * sizeof(Pixel));
-        
-        // Figure out how many threads and blocks
-        int numBlocks = numWorkers / THREADS_PER_BLOCK;
-        int numThreads = THREADS_PER_BLOCK;
-
-        printf("Number of blocks: %d", numBlocks);
+        printf("\nNumber of blocks: %d\n", numBlocks);
+        printf("pixelsPerBlock: %d\n", pixelsPerBlock);
 
         // launch cuda kernal and wait for it to finish
-        CudaSetDevice(0);
-        RenderKernel<<<numBlocks, numThreads>>>(cudaOpacities, image->width, image->height, color, cudaLines, lines->size());
+        dim3 grid(numBlocks);
+        dim3 block(pixelsPerBlock, lines->size());
+        RenderKernel<<<grid, block, pixelWorkersPerBlock * sizeof(int)>>>(cudaImg, image->width, image->height, color, cudaLines, lines->size());
         CudaCheckLaunchErrors();
-        CudaDeviceSynchronize();
-
-        numBlocks = numPixels / THREADS_PER_BLOCK;
-        FlattenImages<<<numBlocks, numThreads>>>(cudaImg, cudaOpacities, image->width, image->height);
-        CudaCheckLaunchErrors();
-        CudaDeviceSynchronize();
-
 
         // copy the results into the image
         CudaMemcpy(image->pixels, cudaImg, numPixels * sizeof(Pixel), cudaMemcpyDeviceToHost);
@@ -192,9 +164,9 @@ void CudaRenderImage(Image* image, Pixel color, std::vector<Line>* lines)
     {
         cudaFree(cudaLines);
     }
-    if (cudaOpacities != nullptr)
-    {
-        cudaFree(cudaOpacities);
-    }
+    //if (cudaOpacities != nullptr)
+    //{
+    //    cudaFree(cudaOpacities);
+    //}
     cudaDeviceReset();
 }
