@@ -16,7 +16,7 @@ void main()
     const int HEIGHT = 1080 * 2;
     const int PADDING = 2;
 
-    const int numRuns = 1;
+    const int numRuns = 34;
     
     std::vector<Image*> images(numRuns);
     for (int i = 0; i < numRuns; i++)
@@ -30,33 +30,51 @@ void main()
     std::vector<Line> lines;
     Line line;
 
-    // diagonal top left to bottom right
-    line.start.x = PADDING;
-    line.start.y = PADDING;
-    line.end.x = WIDTH - PADDING;
-    line.end.y = HEIGHT - PADDING;
-    lines.push_back(line);
+    int centerX = WIDTH / 2;
+    int centerY = HEIGHT / 2;
+    int length = centerX - PADDING;
+    if (centerY < centerX)
+    {
+        length = centerY - PADDING;
+    }
 
-    // diagonal top right to bottom left
-    line.start.x = WIDTH;
-    line.start.y = 0;
-    line.end.x = 0;
-    line.end.y = HEIGHT;
-    lines.push_back(line);
+    for (int angle = 0; angle < 360; angle++)
+    {
+        line.start.x = centerX;
+        line.start.y = centerY;
 
-    // diagonal mid top left to mid bottom right (1/3 slope)
-    line.start.x = 0;
-    line.start.y = (HEIGHT / 3);
-    line.end.x = WIDTH;
-    line.end.y = (HEIGHT * 2 / 3);
-    lines.push_back(line);
+        line.end.x = round(length * sin(angle * 3.1415f / 180)) + line.start.x;
+        line.end.y = round(length * cos(angle * 3.1415f / 180)) + line.start.y;
+        lines.push_back(line);
+    }
 
-    // vertical line
-    line.start.x = WIDTH / 2;
-    line.end.x = WIDTH / 2;
-    line.start.y = PADDING;
-    line.end.y = HEIGHT - PADDING;
-    lines.push_back(line);
+    //// diagonal top left to bottom right
+    //line.start.x = PADDING;
+    //line.start.y = PADDING;
+    //line.end.x = WIDTH - PADDING;
+    //line.end.y = HEIGHT - PADDING;
+    //lines.push_back(line);
+
+    //// diagonal top right to bottom left
+    //line.start.x = WIDTH;
+    //line.start.y = 0;
+    //line.end.x = 0;
+    //line.end.y = HEIGHT;
+    //lines.push_back(line);
+
+    //// diagonal mid top left to mid bottom right (1/3 slope)
+    //line.start.x = 0;
+    //line.start.y = (HEIGHT / 3);
+    //line.end.x = WIDTH;
+    //line.end.y = (HEIGHT * 2 / 3);
+    //lines.push_back(line);
+
+    //// vertical line
+    //line.start.x = WIDTH / 2;
+    //line.end.x = WIDTH / 2;
+    //line.start.y = PADDING;
+    //line.end.y = HEIGHT - PADDING;
+    //lines.push_back(line);
 
     Pixel color;
     color.R = 0;
