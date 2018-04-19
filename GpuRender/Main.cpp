@@ -16,7 +16,7 @@ void main()
     const int HEIGHT = 1080 * 2;
     const int PADDING = 2;
 
-    const int numRuns = 1;
+    const int numRuns = 2;
     
     std::vector<Image*> images(numRuns);
     for (int i = 0; i < numRuns; i++)
