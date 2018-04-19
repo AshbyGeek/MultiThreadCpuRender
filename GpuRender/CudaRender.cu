@@ -60,6 +60,41 @@ Pixel atomicAlphaMax(Pixel* address, Pixel value)
 }
 
 __device__
+Pixel intToPixel(int value)
+{
+    return *((Pixel*)&value);
+}
+
+__device__
+int pixelToInt(Pixel value)
+{
+    return *((int*)&value);
+}
+
+__device__
+void atomicBlend(Pixel* address, Pixel value)
+{
+    while (true)
+    {
+        // Get the current value and run our operation
+        Pixel curVal = *address;
+        Pixel newVal = BlendPixels(curVal, value);
+        
+        // Place the new value into memory if nobody else has changed 
+        //   the memory address since we pulled the value
+        int oldVal = atomicCAS((int*)address, pixelToInt(curVal), pixelToInt(newVal));
+
+        // If the swap was successful (nobody else changed the memory location)
+        // then we're done
+        // otherwise repeat the entire process
+        if (pixelToInt(curVal) == oldVal)
+        {
+            return;
+        }
+    }
+}
+
+__device__
 void DrawPixelsAt(Pixel* image, int imgWidth, int imgHeight, Line line, Pixel color, int x, int y, float distFromPixel)
 {
     if (x > imgWidth || y > imgHeight)
@@ -68,7 +103,7 @@ void DrawPixelsAt(Pixel* image, int imgWidth, int imgHeight, Line line, Pixel co
     color.A = (1 - abs(distFromPixel)) * 255;
     if (color.A > 0)
     {
-        atomicAlphaMax(&image[x + y * imgWidth], color);
+        atomicBlend(&image[x + y * imgWidth], color);
     }
 }
 
@@ -174,24 +209,24 @@ void CudaRenderImage(Image* image, Pixel color, std::vector<Line>* lines)
             {
                 dim3 numThreads(THREADS_PER_BLOCK / 2, 2);
                 dim3 numBlocks(abs(lineVect.x) / numThreads.x, 1, 1);
-                DrawLineXCentric<<<numBlocks,numThreads>>>(cudaOpacities, image->width, image->height, line, color);
+                DrawLineXCentric<<<numBlocks,numThreads>>>(cudaImg, image->width, image->height, line, color);
                 CudaCheckLaunchErrors();
             }
             else
             {
                 dim3 numThreads(THREADS_PER_BLOCK / 2, 2);
                 dim3 numBlocks(abs(lineVect.y) / numThreads.x, 1, 1);
-                DrawLineYCentric<<<numBlocks,numThreads>>>(cudaOpacities, image->width, image->height, line, color);
+                DrawLineYCentric<<<numBlocks,numThreads>>>(cudaImg, image->width, image->height, line, color);
                 CudaCheckLaunchErrors();
             }
         }
 
-        CudaDeviceSynchronize();
-        
-        int sqrtThreadsPerBlock = sqrt(THREADS_PER_BLOCK);
-        dim3 numBlocksFlatten(image->width / sqrtThreadsPerBlock, image->height / sqrtThreadsPerBlock);
-        dim3 numThreadsFlatten(sqrtThreadsPerBlock, sqrtThreadsPerBlock);
-        FlattenImages<<<numBlocksFlatten, numThreadsFlatten>>>(cudaImg, cudaOpacities, image->width, image->height);
+        //CudaDeviceSynchronize();
+        //
+        //int sqrtThreadsPerBlock = sqrt(THREADS_PER_BLOCK);
+        //dim3 numBlocksFlatten(image->width / sqrtThreadsPerBlock, image->height / sqrtThreadsPerBlock);
+        //dim3 numThreadsFlatten(sqrtThreadsPerBlock, sqrtThreadsPerBlock);
+        //FlattenImages<<<numBlocksFlatten, numThreadsFlatten>>>(cudaImg, cudaOpacities, image->width, image->height);
 
         // copy the results into the image
         CudaMemcpy(image->pixels, cudaImg, numPixels * sizeof(Pixel), cudaMemcpyDeviceToHost);
