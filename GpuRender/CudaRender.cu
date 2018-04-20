@@ -122,10 +122,9 @@ void DrawLineYCentric(Pixel* image, int imgWidth, int imgHeight, Line line, Pixe
     int dy = end.y - start.y;
 
 
-    int y = threadIdx.x + blockIdx.x * blockDim.x;
-    if (y > abs(line.Vector().y))
+    int y = start.y + threadIdx.x + blockIdx.x * blockDim.x;
+    if (y < start.y || y > end.y)
         return;
-    y += start.y;
 
     float x = start.x + dx / (float)dy * (y - start.y);
     if (threadIdx.y == 1)
@@ -152,10 +151,9 @@ void DrawLineXCentric(Pixel* image, int imgWidth, int imgHeight, Line line, Pixe
     int dx = end.x - start.x;
     int dy = end.y - start.y;
 
-    int x = threadIdx.x + blockIdx.x * blockDim.x;
-    if (x > abs(line.Vector().x))
+    int x = start.x + threadIdx.x + blockIdx.x * blockDim.x;
+    if (x < start.x || x > end.x)
         return;
-    x += start.x;
 
     float y = start.y + dy / (float)dx * (x - start.x);
     if (threadIdx.y == 1)
@@ -208,14 +206,14 @@ void CudaRenderImage(Image* image, Pixel color, std::vector<Line>* lines)
             if (abs(lineVect.x) >= abs(lineVect.y))
             {
                 dim3 numThreads(THREADS_PER_BLOCK / 2, 2);
-                dim3 numBlocks(abs(lineVect.x) / numThreads.x, 1, 1);
+                dim3 numBlocks(abs(lineVect.x) / numThreads.x + 1, 1, 1);
                 DrawLineXCentric<<<numBlocks,numThreads>>>(cudaImg, image->width, image->height, line, color);
                 CudaCheckLaunchErrors();
             }
             else
             {
                 dim3 numThreads(THREADS_PER_BLOCK / 2, 2);
-                dim3 numBlocks(abs(lineVect.y) / numThreads.x, 1, 1);
+                dim3 numBlocks(abs(lineVect.y) / numThreads.x + 1, 1, 1);
                 DrawLineYCentric<<<numBlocks,numThreads>>>(cudaImg, image->width, image->height, line, color);
                 CudaCheckLaunchErrors();
             }
